@@ -1,21 +1,21 @@
 {
-  "name": "jeylabs/wit",
+  "name": "jeylabs/vsts",
   "type": "library",
-  "description": "PHP Library for Wit.ai API with Laravel 5.3 Support out of the box!",
+  "description": "Visual Studio Team Services (VSTS) and Team Foundation Server (TFS) REST API PHP Client",
   "keywords": [
-    "wit",
-    "wit.ai",
-    "laravel",
-    "laravel wit"
+    "microsoft",
+    "visual studio team services rest client",
+    "team foundation server rest client",
+    "vsts",
+    "tfs"
   ],
-  "homepage": "https://github.com/jeylabs/wit",
+  "homepage": "https://github.com/jeylabs/vsts",
   "license": "MIT",
   "authors": [
     {
-      "name": "jeylabs",
-      "email": "suresh.ceymplon@jeylabs.com",
-      "homepage": "https://jeylabs.com",
-      "role": "Developer"
+      "name": "S A Sureshkumar",
+      "email": "suresh.ceymplon@jeylabs.com.au",
+      "homepage": "https://jeylabs.com"
     }
   ],
   "require": {
@@ -30,12 +30,12 @@
   },
   "autoload": {
     "psr-4": {
-      "Jeylabs\\Wit\\": "src"
+      "Jeylabs\\VSTS\\": "src"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "Jeylabs\\Wit\\Test\\": "tests"
+      "Jeylabs\\VSTS\\Test\\": "tests"
     }
   },
   "scripts": {
