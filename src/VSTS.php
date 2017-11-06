@@ -16,16 +16,22 @@ class VSTS
     protected $version = '1.0';
     protected $isAsyncRequest = false;
     protected $accessToken = null;
+    protected $project = null;
 
     public function __construct($instance, $collection = 'DefaultCollection', $version = '1.0', $httpClient = null)
     {
-        $baseURI = 'https://' . $instance . '/' . $collection . '/_apis/';
+        $baseURI = 'https://' . $instance . '/' . $collection;
         $this->version = $version;
         $this->client = $httpClient ?: new Client([
             'base_uri' => $baseURI,
             'timeout' => self::DEFAULT_TIMEOUT,
             'connect_timeout' => self::DEFAULT_TIMEOUT,
         ]);
+    }
+
+    public function setProject($project)
+    {
+        $this->project = $project;
     }
 
     public function isAsyncRequests()
@@ -69,15 +75,49 @@ class VSTS
         return $this->makeRequest('GET', 'projects');
     }
 
-    protected function makeRequest($method, $uri, $query = [])
+    public function getWorkItemTypes()
     {
+        return $this->makeRequest('GET', 'wit/workItemTypes');
+    }
+
+    public function getWorkItemIDs()
+    {
+        $data = [
+            'query' => "Select [System.Id], [System.Title], [System.State] From WorkItems"
+        ];
+        return $this->makeRequest('POST', 'wit/wiql', [], $data);
+    }
+
+    public function getWorkItems($ids)
+    {
+        $idChunks = array_chunk(explode(',', $ids), 200, true);
+        $response = [
+            'count' => 0,
+            'value' => []
+        ];
+        foreach ($idChunks as $idArray) {
+            $query = [
+                'ids' => implode(',', $idArray)
+            ];
+            $r = $this->makeRequest('GET', 'wit/workitems', $query, []);
+            $response['count'] += $r['count'];
+            $response['value'] = array_merge($response['value'], $r['value']);
+        }
+        return $response;
+    }
+
+    protected function makeRequest($method, $uri, $query = [], $data = null)
+    {
+        $uri = ($this->project ? '/' . $this->project : '') . '/_apis/' . $uri;
         $options[GuzzleRequestOptions::QUERY] = $query;
         $options[GuzzleRequestOptions::HEADERS] = $this->getDefaultHeaders();
+        if ($data) {
+            $options[GuzzleRequestOptions::JSON] = $data;
+        }
         if ($this->isAsyncRequest) {
             return $this->promises[] = $this->client->requestAsync($method, $uri, $options);
         }
         $this->lastResponse = $this->client->request($method, $uri, $options);
-
         return json_decode($this->lastResponse->getBody(), true);
     }
 
