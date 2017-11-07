@@ -80,10 +80,14 @@ class VSTS
         return $this->makeRequest('GET', 'wit/workItemTypes');
     }
 
-    public function getWorkItemIDs()
+    public function getWorkItemIDs($areaPath = null)
     {
+        $q = 'Select [System.Id], [System.Title], [System.State] From WorkItems';
+        if ($areaPath) {
+            $q .= ' WHERE System.AreaPath = \'' . $areaPath . '\'';
+        }
         $data = [
-            'query' => "Select [System.Id], [System.Title], [System.State] From WorkItems"
+            'query' => $q
         ];
         return $this->makeRequest('POST', 'wit/wiql', [], $data);
     }
