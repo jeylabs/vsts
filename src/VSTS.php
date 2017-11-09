@@ -101,13 +101,37 @@ class VSTS
         ];
         foreach ($idChunks as $idArray) {
             $query = [
-                'ids' => implode(',', $idArray)
+                'ids' => implode(',', $idArray),
+                '$expand' => 'relations'
             ];
             $r = $this->makeRequest('GET', 'wit/workitems', $query, []);
             $response['count'] += $r['count'];
             $response['value'] = array_merge($response['value'], $r['value']);
         }
         return $response;
+    }
+
+    public function getTeams($projectRemoteId)
+    {
+        return $this->makeRequest('GET', 'projects/'.$projectRemoteId.'/teams');
+    }
+
+    public function getTeamMembers($projectRemoteId, $teamRemoteId)
+    {
+        return $this->makeRequest('GET', 'projects/'.$projectRemoteId.'/teams/'.$teamRemoteId.'/members');
+    }
+
+    public function getIterations()
+    {
+        return $this->makeRequest('GET', 'work/teamsettings/iterations');
+    }
+
+    public function getWorkItem($workItemId)
+    {
+        $query = [
+            '$expand' => 'all'
+        ];
+        return $this->makeRequest('GET', 'wit/workitems/'.$workItemId, $query, []);
     }
 
     protected function makeRequest($method, $uri, $query = [], $data = null)
