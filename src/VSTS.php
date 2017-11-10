@@ -102,7 +102,7 @@ class VSTS
         foreach ($idChunks as $idArray) {
             $query = [
                 'ids' => implode(',', $idArray),
-                '$expand' => 'relations'
+                '$expand' => 'all'
             ];
             $r = $this->makeRequest('GET', 'wit/workitems', $query, []);
             $response['count'] += $r['count'];
