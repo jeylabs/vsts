@@ -13,12 +13,13 @@ class VSTS
     protected $headers = [];
     protected $promises = [];
     protected $lastResponse;
-    protected $version = '1.0';
+    protected $version = '2.0';
     protected $isAsyncRequest = false;
     protected $accessToken = null;
     protected $project = null;
+    protected $team = null;
 
-    public function __construct($instance, $collection = 'DefaultCollection', $version = '1.0', $httpClient = null)
+    public function __construct($instance, $collection = 'DefaultCollection', $version = '2.0', $httpClient = null)
     {
         $baseURI = 'https://' . $instance . '/' . $collection;
         $this->version = $version;
@@ -32,6 +33,11 @@ class VSTS
     public function setProject($project)
     {
         $this->project = $project;
+    }
+
+    public function setTeam($team)
+    {
+        $this->team = $team;
     }
 
     public function isAsyncRequests()
@@ -136,7 +142,7 @@ class VSTS
 
     protected function makeRequest($method, $uri, $query = [], $data = null)
     {
-        $uri = ($this->project ? '/' . $this->project : '') . '/_apis/' . $uri;
+        $uri = ($this->project ? '/' . $this->project : ''). ($this->team ? '/' . $this->team : '') . '/_apis/' . $uri;
         $options[GuzzleRequestOptions::QUERY] = $query;
         $options[GuzzleRequestOptions::HEADERS] = $this->getDefaultHeaders();
         if ($data) {
