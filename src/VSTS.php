@@ -8,7 +8,7 @@ use GuzzleHttp\RequestOptions as GuzzleRequestOptions;
 
 class VSTS
 {
-    const DEFAULT_TIMEOUT = 5;
+    const DEFAULT_TIMEOUT = 10;
     protected $client;
     protected $headers = [];
     protected $promises = [];
