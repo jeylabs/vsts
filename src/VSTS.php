@@ -15,7 +15,11 @@ class VSTS
     protected $lastResponse;
     protected $version = '2.0';
     protected $isAsyncRequest = false;
+
+    protected $auhType = 'Bearer';
+    protected $userPAT = null;
     protected $accessToken = null;
+
     protected $project = null;
     protected $team = null;
 
@@ -57,9 +61,23 @@ class VSTS
         return $this->headers;
     }
 
+    public function setAuthType($type)
+    {
+        $this->auhType = $type;
+
+        return $this;
+    }
+
     public function setAccessToken($token)
     {
         $this->accessToken = $token;
+
+        return $this;
+    }
+
+    public function setUserPAT($userPAT)
+    {
+        $this->userPAT = $userPAT;
 
         return $this;
     }
@@ -119,12 +137,12 @@ class VSTS
 
     public function getTeams($projectRemoteId)
     {
-        return $this->makeRequest('GET', 'projects/'.$projectRemoteId.'/teams');
+        return $this->makeRequest('GET', 'projects/' . $projectRemoteId . '/teams');
     }
 
     public function getTeamMembers($projectRemoteId, $teamRemoteId)
     {
-        return $this->makeRequest('GET', 'projects/'.$projectRemoteId.'/teams/'.$teamRemoteId.'/members');
+        return $this->makeRequest('GET', 'projects/' . $projectRemoteId . '/teams/' . $teamRemoteId . '/members');
     }
 
     public function getIterations()
@@ -137,17 +155,19 @@ class VSTS
         $query = [
             '$expand' => 'all'
         ];
-        return $this->makeRequest('GET', 'wit/workitems/'.$workItemId, $query, []);
+        return $this->makeRequest('GET', 'wit/workitems/' . $workItemId, $query, []);
     }
 
     protected function makeRequest($method, $uri, $query = [], $data = null)
     {
-        $uri = ($this->project ? '/' . $this->project : ''). ($this->team ? '/' . $this->team : '') . '/_apis/' . $uri;
+        $uri = ($this->project ? '/' . $this->project : '') . ($this->team ? '/' . $this->team : '') . '/_apis/' . $uri;
         $options[GuzzleRequestOptions::QUERY] = $query;
-        $options[GuzzleRequestOptions::HEADERS] = $this->getDefaultHeaders();
+        $options[GuzzleRequestOptions::HEADERS] = $this->getRequestHeaders();
+
         if ($data) {
             $options[GuzzleRequestOptions::JSON] = $data;
         }
+
         if ($this->isAsyncRequest) {
             return $this->promises[] = $this->client->requestAsync($method, $uri, $options);
         }
@@ -155,12 +175,41 @@ class VSTS
         return json_decode($this->lastResponse->getBody(), true);
     }
 
-    protected function getDefaultHeaders()
+    protected function getRequestHeaders()
     {
-        return array_merge([
-            'Authorization' => 'Bearer ' . $this->accessToken,
+        $defaultHeaders = array_merge([
             'Accept' => 'application/json;api-version=' . $this->version,
-        ], $this->headers);
+        ], $this->getAuthHeader());
+
+        return array_merge($defaultHeaders, $this->headers);
+    }
+
+    private function getAuthHeader()
+    {
+        switch ($this->auhType) {
+            case 'Bearer':
+                return $this->createBearerAuthHeader();
+
+            case 'Basic':
+                return $this->createBasicAuthHeader();
+
+            default:
+                return [];
+        }
+    }
+
+    private function createBearerAuthHeader()
+    {
+        return [
+            'Authorization' => 'Bearer ' . $this->accessToken,
+        ];
+    }
+
+    private function createBasicAuthHeader()
+    {
+        return [
+            'Authorization' => 'Basic ' . $this->userPAT,
+        ];
     }
 
     public function __destruct()
