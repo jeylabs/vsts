@@ -158,6 +158,11 @@ class VSTS
         return $this->makeRequest('GET', 'wit/workitems/' . $workItemId, $query, []);
     }
 
+    public function getSubscriptions()
+    {
+        return $this->makeRequest('GET', 'hooks/subscriptions');
+    }
+
     protected function makeRequest($method, $uri, $query = [], $data = null)
     {
         $uri = ($this->project ? '/' . $this->project : '') . ($this->team ? '/' . $this->team : '') . '/_apis/' . $uri;
